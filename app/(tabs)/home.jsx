@@ -1,15 +1,17 @@
-import { View, Text, FlatList, Image, RefreshControl } from "react-native";
+import { View, Text, FlatList, Image, RefreshControl, Alert } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // Import images
 import { images } from "../../constants";
 import SearchInput from "../../components/SearchInput";
 import EmptyState from "../../components/EmptyState";
+import Trending from "../../components/Trending";
+import { getAllPosts } from "../../lib/appwrite";
 
 const Home = () => {
   const [refreshing, setRefreshing] = useState(false)
-
+  
   const onRefresh = async () => {
     setRefreshing(true)
     // re-call videos -> if any new videos appeared
@@ -48,8 +50,8 @@ const Home = () => {
                 <Text className='text-gray-100 text-lg font-pregular mb-3'>
                   Latest Videos
                 </Text>
-
                 {/* Add a trending component here */}
+                <Trending posts={[{ id: 1 }, { id: 2 }, { id: 3 }] ?? []} />
               </View>
             </View>
           )}

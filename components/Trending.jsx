@@ -1,6 +1,4 @@
 import {
-  View,
-  Text,
   FlatList,
   TouchableOpacity,
   ImageBackground,
@@ -9,7 +7,7 @@ import {
 import React, { useState } from "react";
 import * as Animatable from "react-native-animatable";
 import { icons } from "../constants";
-import { Video } from "expo-av";
+import { ResizeMode, Video } from "expo-av";
 
 const zoomIn = {
   0: {
@@ -35,27 +33,47 @@ const TrendingItems = ({ activeItem, item }) => {
   return (
     <Animatable.View
       classNae="mr-5"
-      animation={activeItem == item.$id ? zoomIn : zoomOut}
+      animation={activeItem === item.$id ? zoomIn : zoomOut}
       duration={500}
     >
       {play ? (
         <Video
           source={{ uri: item.video }}
-          className="w-52 h-72 rounded-[35px] mt-3 bg-white"
+          className="w-52 h-72 rounded-[35px] mt-3 bg-white/10"
+          resizeMode={ResizeMode.CONTAIN}
+          useNativeControls
+          shouldPlay
+          onPlaybackStatusUpdate={(status) => {
+            if (!status.isLoaded) {
+              setPlay(true)
+              // Update your UI for the unloaded state
+              if (status.error) {
+                setPlay(true)
+                console.log(`Encountered a fatal error during playback: ${status.error}`);
+                // Send Expo team the error on Slack or the forums so we can help you debug!
+              }
+              
+            } else {
+              if (status.didJustFinish) {
+                setPlay(false)
+              }
+            }
+          }}
         />
       ) : (
         <TouchableOpacity
-          className="relative justify-center items-center mx-2 "
+          className="relative justify-center items-center"
           activeOpacity={0.7}
           onPress={() => setPlay(true)}
         >
           <ImageBackground
             source={{
-              uri: item?.thumbnail,
+              uri: item.thumbnail,
             }}
             className="w-52 h-72 rounded-[35px] my-5 overflow-hidden shadow-lg shadow-black/40 "
             resizeMode="cover"
           />
+
           <Image
             source={icons.play}
             className="w-12 h-12 absolute"

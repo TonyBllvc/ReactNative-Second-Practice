@@ -1,16 +1,95 @@
-import { View, Text, FlatList } from "react-native";
-import React from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ImageBackground,
+  Image,
+} from "react-native";
+import React, { useState } from "react";
+import * as Animatable from "react-native-animatable";
+import { icons } from "../constants";
+import { Video } from "expo-av";
 
-const Trending = ({posts}) => {
+const zoomIn = {
+  0: {
+    scale: 0.9,
+  },
+  1: {
+    scale: 1.03,
+  },
+};
+
+const zoomOut = {
+  0: {
+    scale: 1.03,
+  },
+  1: {
+    scale: 0.9,
+  },
+};
+
+const TrendingItems = ({ activeItem, item }) => {
+  const [play, setPlay] = useState(false);
+
   return (
-    <FlatList 
-      data={posts}
-      keyExtractor={(item) => item?.id}
-      renderItem={({ item }) => (
-        <Text className='text-3xl text-white '>
-          {item.id}
-        </Text>
+    <Animatable.View
+      classNae="mr-5"
+      animation={activeItem == item.$id ? zoomIn : zoomOut}
+      duration={500}
+    >
+      {play ? (
+        <Video
+          source={{ uri: item.video }}
+          className="w-52 h-72 rounded-[35px] mt-3 bg-white"
+        />
+      ) : (
+        <TouchableOpacity
+          className="relative justify-center items-center mx-2 "
+          activeOpacity={0.7}
+          onPress={() => setPlay(true)}
+        >
+          <ImageBackground
+            source={{
+              uri: item?.thumbnail,
+            }}
+            className="w-52 h-72 rounded-[35px] my-5 overflow-hidden shadow-lg shadow-black/40 "
+            resizeMode="cover"
+          />
+          <Image
+            source={icons.play}
+            className="w-12 h-12 absolute"
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       )}
+    </Animatable.View>
+  );
+};
+
+const Trending = ({ posts }) => {
+  const [activeItem, setActiveItem] = useState(posts[0]);
+
+  const viewableItemsChanged = ({ viewableItems }) => {
+    if (viewableItems?.length > 0) {
+      setActiveItem(viewableItems[0].key);
+    }
+  };
+
+  return (
+    <FlatList
+      data={posts}
+      keyExtractor={(item) => item?.$id}
+      renderItem={({ item }) => (
+        <TrendingItems activeItem={activeItem} item={item} />
+      )}
+      onViewableItemsChanged={viewableItemsChanged}
+      viewabilityConfig={{
+        itemVisiblePercentThreshold: 70,
+      }}
+      contentOffset={{
+        x: 170,
+      }}
       horizontal
     />
   );
